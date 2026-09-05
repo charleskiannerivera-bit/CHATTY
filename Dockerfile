@@ -1,6 +1,6 @@
 FROM node:22-bookworm-slim AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package*.json ./package-lock.json ./
+COPY frontend/package*.json ./
 RUN npm install --no-audit --legacy-peer-deps
 COPY frontend/ ./
 
@@ -12,7 +12,7 @@ RUN npm run build
 
 FROM node:22-bookworm-slim AS backend-build
 WORKDIR /app/backend
-COPY backend/package*.json ./package-lock.json ./
+COPY backend/package*.json ./
 RUN npm install --no-audit --legacy-peer-deps
 COPY backend/ ./
 RUN npm run build
@@ -22,7 +22,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
-COPY backend/package*.json ./package-lock.json ./
+COPY backend/package*.json ./
 RUN npm install --no-audit --omit=dev --no-fund && npm cache clean --force
 
 COPY --from=backend-build /app/dist ./dist  
