@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "rm -rf dist && cp -R src dist",
     "dev": "node src/index.js"
   },
   "keywords": [],
