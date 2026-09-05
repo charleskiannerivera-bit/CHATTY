@@ -25,7 +25,7 @@ ENV PORT=3001
 COPY backend/package*.json ./
 RUN npm install --no-audit --omit=dev --no-fund && npm cache clean --force
 
-COPY --from=backend-build /app/dist ./dist  
+COPY --from=backend-build /app/backend/dist ./dist
 COPY --from=frontend-build /app/frontend/dist ./public
 
 EXPOSE 3001
