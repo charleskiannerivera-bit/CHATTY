@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "if exist dist rmdir /s /q dist && xcopy src dist /E /I /H /Y",
     "dev": "node src/index.js"
   },
   "keywords": [],
