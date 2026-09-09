@@ -7,7 +7,7 @@ import { clerkMiddleware } from "@clerk/express";
 import dns from "dns";
 import User from "./models/User.js";
 import { connectDB } from "./lib/db.js";
-import { job } from "./lib/cron.js";
+import job from "./lib/cron.js";
 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
