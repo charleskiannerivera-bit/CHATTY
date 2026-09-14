@@ -9,7 +9,7 @@ router.post("/", async (req, res) => {
     const signingSecret = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
 
     if (!signingSecret) {
-      req.statusCode(503).json({ message: "Webhook secret is not provided" });
+      res.status(503).json({ message: "Webhook secret is not provided" });
       return;
     }
 
