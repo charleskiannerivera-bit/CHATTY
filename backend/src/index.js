@@ -9,12 +9,20 @@ import User from "./models/User.js";
 import { connectDB } from "./lib/db.js";
 import job from "./lib/cron.js";
 
+import clerkWebhooks from "./webhooks/clerk.webhooks.js";
+
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const publicDir = path.join(path.resolve(), "public");
+
+app.use(
+  "api/webhooks/clerk",
+  express.raw({ type: "application/json" }),
+  clerkWebhooks,
+);
 
 app.use(express.json());
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
