@@ -8,6 +8,10 @@ import { useAuth } from "@clerk/react";
 function App() {
   const { isSignedIn, isLoaded } = useAuth();
 
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <BrowserRouter>
       <ThemeProvider>
@@ -22,7 +26,7 @@ function App() {
             <Route
               path="/auth"
               element={
-                !isSignedIn ? <AuthPage /> : <Navigate to={"/chat"} replace />
+                !isSignedIn ? <AuthPage /> : <Navigate to={"/"} replace />
               }
             />
           </Routes>

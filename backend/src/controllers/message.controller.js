@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import Message from "../models/message.model.js";
-import { uploadChatmedia, hasImageKitConfig } from "../lib/imagekit.js";
+import { hasImageKitConfig, uploadChatMedia } from "../lib/imagekit.js";
 import { getReceiverSocketId } from "../lib/socket.js";
 
 export async function getUsersForSidebar(req, res) {
