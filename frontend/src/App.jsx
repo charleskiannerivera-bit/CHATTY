@@ -12,6 +12,9 @@ function App() {
     return <div>Loading...</div>;
   }
 
+  // Set this to true when ChatPage is ready
+  const chatPageReady = false;
+
   return (
     <BrowserRouter>
       <ThemeProvider>
@@ -20,15 +23,11 @@ function App() {
             <Route
               path="/"
               element={
-                isSignedIn ? <ChatPage /> : <Navigate to={"/auth"} replace />
+                chatPageReady && isSignedIn ? <ChatPage /> : <AuthPage />
               }
             />
-            <Route
-              path="/auth"
-              element={
-                !isSignedIn ? <AuthPage /> : <Navigate to={"/"} replace />
-              }
-            />
+
+            <Route path="/auth" element={<AuthPage />} />
           </Routes>
         </WallpaperProvider>
       </ThemeProvider>
