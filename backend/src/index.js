@@ -12,7 +12,7 @@ import job from "./lib/cron.js";
 import clerkWebhooks from "./webhooks/clerk.webhooks.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
-import { server } from "./lib/socket.js";
+import { app, server } from "./lib/socket.js";
 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
