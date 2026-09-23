@@ -1,11 +1,11 @@
 import User from "../models/User.js";
 import Message from "../models/message.model.js";
 import { hasImageKitConfig, uploadChatMedia } from "../lib/imagekit.js";
-import { getReceiverSocketId } from "../lib/socket.js";
+import { io, getReceiverSocketId } from "../lib/socket.js";
 
 export async function getUsersForSidebar(req, res) {
   try {
-    const loggedInUserId = req.user_id;
+    const loggedInUserId = req.user._id;
 
     const filteredUsers = await User.find({
       _id: { $ne: loggedInUserId },
@@ -20,7 +20,7 @@ export async function getUsersForSidebar(req, res) {
 
 export async function getConversationsForSidebar(req, res) {
   try {
-    const loggedInUserId = req.user_id;
+    const loggedInUserId = req.user._id;
 
     const conversations = await Message.aggregate([
       {
@@ -41,6 +41,11 @@ export async function getConversationsForSidebar(req, res) {
         },
       },
       {
+        $match: {
+          _id: { $ne: loggedInUserId },
+        },
+      },
+      {
         $sort: { lastMessage: -1 },
       },
       {
@@ -52,7 +57,7 @@ export async function getConversationsForSidebar(req, res) {
         },
       },
       {
-        $replaceRoot: { newRoot: { $first: "user" } },
+        $replaceRoot: { newRoot: { $arrayElemAt: ["$user", 0] } },
       },
       {
         $project: {
@@ -71,7 +76,7 @@ export async function getConversationsForSidebar(req, res) {
 export async function getMessages(req, res) {
   try {
     const { id: userToChatId } = req.params;
-    const myId = req.user_id;
+    const myId = req.user._id;
 
     const messages = await Message.find({
       $or: [
@@ -90,21 +95,39 @@ export async function sendMessage(req, res) {
   try {
     const { text } = req.body;
     const { id: receiverId } = req.params;
-    const senderId = req.user_id;
+
+    const senderId = req.user._id;
+
+    console.log("SEND MESSAGE");
+    console.log("Sender:", senderId.toString());
+    console.log("Receiver:", receiverId);
+    console.log("Text:", text);
 
     let imageURL;
     let videoURL;
 
     if (req.file) {
       if (!hasImageKitConfig()) {
-        return res
-          .status(500)
-          .json({ message: "ImageKit configuration is missing" });
+        return res.status(500).json({
+          message: "ImageKit configuration is missing",
+        });
       }
 
-      const url = await uploadChatmedia(req.file);
-      if (req.file.mimetype.startsWith("video/")) videoURL = url;
-      else imageURL = url;
+      const url = await uploadChatMedia(req.file);
+
+      if (req.file.mimetype.startsWith("video/")) {
+        videoURL = url;
+      } else {
+        imageURL = url;
+      }
+    }
+
+    const receiver = await User.findById(receiverId);
+
+    if (!receiver) {
+      return res.status(404).json({
+        message: "Receiver not found",
+      });
     }
 
     const newMessage = new Message({
@@ -118,13 +141,17 @@ export async function sendMessage(req, res) {
     await newMessage.save();
 
     const receiverSocketId = getReceiverSocketId(receiverId);
+
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.error("Error sending message:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error sending message:", error);
+
+    res.status(500).json({
+      message: error.message || "Internal server error",
+    });
   }
 }
