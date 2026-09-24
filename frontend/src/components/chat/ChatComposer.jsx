@@ -1,37 +1,46 @@
 import { Button, TextArea } from "@heroui/react";
 import { ImageIcon, LoaderIcon, SendHorizontalIcon } from "lucide-react";
 import { useRef } from "react";
+import useKeyboardSound from "../../hooks/useKeyboardSound";
 import { useChatStore } from "../../store/useChatStore";
 import { useSelectedConversation } from "../../hooks/useSelectedConversation";
 
 export function ChatComposer() {
   const composerText = useChatStore((state) => state.composerText);
+  const isSoundEnabled = useChatStore((state) => state.isSoundEnabled);
   const sendMediaMessage = useChatStore((state) => state.sendMediaMessage);
   const isSendingMedia = useChatStore((state) => state.isSendingMedia);
   const sendTextMessage = useChatStore((state) => state.sendTextMessage);
   const setComposerText = useChatStore((state) => state.setComposerText);
-
   const { activeConversationId } = useSelectedConversation();
+  const { playRandomKeyStrokeSound } = useKeyboardSound();
   const mediaInputRef = useRef(null);
 
+  const playSoundIfEnabled = () => {
+    if (isSoundEnabled) playRandomKeyStrokeSound();
+  };
+
   const handleSend = async () => {
-    await sendTextMessage(activeConversationId);
+    const didSendMessage = await sendTextMessage(activeConversationId);
+    if (didSendMessage) playSoundIfEnabled();
   };
 
   const handleComposerTextChange = (event) => {
     setComposerText(event.target.value);
+    playSoundIfEnabled();
   };
 
   const handleMediaPick = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-
     if (!file) return;
 
-    await sendMediaMessage({
+    const didSendMessage = await sendMediaMessage({
       conversationId: activeConversationId,
       file,
     });
+
+    if (didSendMessage) playSoundIfEnabled();
   };
 
   return (
@@ -46,7 +55,6 @@ export function ChatComposer() {
           <span className="truncate">Uploading media...</span>
         </div>
       ) : null}
-
       <div className="mx-auto flex w-full max-w-full items-end gap-1.5 px-0.5 sm:gap-2 sm:px-1">
         <input
           ref={mediaInputRef}
@@ -58,7 +66,6 @@ export function ChatComposer() {
           aria-hidden
           onChange={handleMediaPick}
         />
-
         <Button
           variant="ghost"
           isIconOnly
@@ -68,7 +75,6 @@ export function ChatComposer() {
         >
           <ImageIcon className="size-5 sm:size-6" strokeWidth={2} />
         </Button>
-
         <TextArea
           fullWidth
           variant="secondary"
